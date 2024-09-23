@@ -13,9 +13,22 @@ mod serial;
 use exit_qemu::{exit_qemu, QemuExitCode};
 
 
+/// panic handler for normal mode
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
+    loop {}
+}
+
+
+/// panic handler for test mode
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    serial_println!("[failed]\n");
+    serial_println!("Error: {}\n", info);
+    exit_qemu(QemuExitCode::Failed);
     loop {}
 }
 
@@ -42,6 +55,6 @@ pub extern "C" fn _start() -> ! {
 #[test_case]
 fn trivial_assertion() {
     serial_print!("trivial assertion... ");
-    assert_eq!(1, 1);
+    assert_eq!(1, 0);
     serial_println!("[ok]");
 }
