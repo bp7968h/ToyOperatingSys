@@ -7,6 +7,10 @@
 use core::panic::PanicInfo;
 mod printer;
 mod vga_buffer;
+mod exit_qemu;
+
+use crate::exit_qemu::{exit_qemu, QemuExitCode};
+
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
@@ -20,6 +24,8 @@ pub fn test_runner(tests: &[&dyn Fn()]) {
     for test in tests {
         test();
     }
+
+    exit_qemu(QemuExitCode::Success);
 }
 
 #[no_mangle]
