@@ -8,8 +8,9 @@ use core::panic::PanicInfo;
 mod printer;
 mod vga_buffer;
 mod exit_qemu;
+mod serial;
 
-use crate::exit_qemu::{exit_qemu, QemuExitCode};
+use exit_qemu::{exit_qemu, QemuExitCode};
 
 
 #[panic_handler]
@@ -20,7 +21,7 @@ fn panic(info: &PanicInfo) -> ! {
 
 #[cfg(test)]
 pub fn test_runner(tests: &[&dyn Fn()]) {
-    println!("Running {} tests", tests.len());
+    serial_println!("Running {} tests", tests.len());
     for test in tests {
         test();
     }
@@ -40,7 +41,7 @@ pub extern "C" fn _start() -> ! {
 
 #[test_case]
 fn trivial_assertion() {
-    print!("trivial assertion... ");
+    serial_print!("trivial assertion... ");
     assert_eq!(1, 1);
-    println!("[ok]");
+    serial_println!("[ok]");
 }
