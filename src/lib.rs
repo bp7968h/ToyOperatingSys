@@ -11,7 +11,7 @@ pub mod exit_qemu;
 pub mod serial;
 
 use core::panic::PanicInfo;
-use exit_qemu::{exit_qemu, QemuExitCode};
+pub use exit_qemu::{exit_qemu, QemuExitCode};
 
 pub trait Testable {
     fn run(&self) -> ();
