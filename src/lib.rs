@@ -3,15 +3,22 @@
 #![feature(custom_test_frameworks)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
+#![feature(abi_x86_interrupt)]
 
 #[macro_use]
 pub mod printer;
 pub mod vga_buffer;
 pub mod exit_qemu;
 pub mod serial;
+pub mod interrupts;
 
 use core::panic::PanicInfo;
 pub use exit_qemu::{exit_qemu, QemuExitCode};
+
+
+pub fn init() {
+    interrupts::init_idt();
+}
 
 pub trait Testable {
     fn run(&self) -> ();
