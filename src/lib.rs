@@ -11,12 +11,14 @@ pub mod vga_buffer;
 pub mod exit_qemu;
 pub mod serial;
 pub mod interrupts;
+pub mod gdt;
 
 use core::panic::PanicInfo;
 pub use exit_qemu::{exit_qemu, QemuExitCode};
 
 
 pub fn init() {
+    gdt::init();
     interrupts::init_idt();
 }
 
