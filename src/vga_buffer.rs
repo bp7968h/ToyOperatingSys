@@ -1,6 +1,4 @@
 #[allow(dead_code)]
-
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Color {
@@ -24,7 +22,7 @@ pub enum Color {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
- pub struct ColorCode(u8);
+pub struct ColorCode(u8);
 
 impl ColorCode {
     pub fn new(foreground: Color, background: Color) -> Self {
@@ -39,7 +37,6 @@ struct ScreenChar {
     color_code: ColorCode,
 }
 
-
 use volatile::Volatile;
 
 const BUFFER_HEIGHT: usize = 25;
@@ -53,7 +50,7 @@ pub struct Buffer {
 pub struct Writer {
     column_position: usize,
     color_code: ColorCode,
-    buffer: &'static mut Buffer
+    buffer: &'static mut Buffer,
 }
 
 impl Writer {
@@ -61,7 +58,7 @@ impl Writer {
         Writer {
             column_position,
             color_code,
-            buffer
+            buffer,
         }
     }
 
@@ -112,7 +109,7 @@ impl Writer {
             ascii_character: b' ',
             color_code: self.color_code,
         };
-        
+
         for col in 0..BUFFER_WIDTH {
             self.buffer.chars[row][col].write(blank);
         }
@@ -140,15 +137,19 @@ fn test_println_many() {
     }
 }
 
-
 use crate::printer::WRITER;
+use x86_64::instructions::interrupts;
+use fmt::Write;
 
 #[test_case]
 fn test_println_output() {
     let s = "Some test string that fits on a single line";
-    println!("{}", s);
-    for (i, c) in s.chars().enumerate() {
-        let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
-        assert_eq!(char::from(screen_char.ascii_character), c);
-    }
+    interrupts::without_interrupts(|| {
+        let mut writer = WRITER.lock();
+        writeln!(writer, "\n{}", s).expect("writeln failed");
+        for (i, c) in s.chars().enumerate() {
+            let screen_char = writer.buffer.chars[BUFFER_HEIGHT - 2][i].read();
+            assert_eq!(char::from(screen_char.ascii_character), c);
+        }
+    })
 }

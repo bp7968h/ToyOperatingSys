@@ -2,6 +2,7 @@ use spin::Mutex;
 use lazy_static::lazy_static;
 use core::fmt::{self,Write};
 use crate::vga_buffer::{Writer, Color, ColorCode, Buffer};
+use x86_64::instructions::interrupts;
 
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer::new(
@@ -26,5 +27,7 @@ macro_rules! println {
 
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
-    WRITER.lock().write_fmt(args).unwrap();
+    interrupts::without_interrupts(|| {
+        WRITER.lock().write_fmt(args).unwrap();
+    })
 }
