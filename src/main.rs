@@ -13,16 +13,11 @@ pub extern "C" fn _start() -> ! {
 
     ToyOperatingSys::init();
 
-    // trigger a page fault
-    // unsafe {
-    //     *(0xdeadbeef as *mut u8) = 42;
-    // };
-
     #[cfg(test)]
     test_main();
 
     println!("It did not crash!");
-    loop {}
+    ToyOperatingSys::hlt_loop();
 }
 
 /// This function is called on panic.
@@ -30,7 +25,7 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop {}
+    ToyOperatingSys::hlt_loop();
 }
 
 #[cfg(test)]
