@@ -6,12 +6,33 @@
 
 use core::panic::PanicInfo;
 use ToyOperatingSys::println;
+use bootloader::{BootInfo, entry_point};
+
+entry_point!(kernel_main);
 
 #[no_mangle]
-pub extern "C" fn _start() -> ! {
-    println!("Hello World{}", "!");
+fn kernel_main(boot_info: &'static BootInfo) -> ! {
+    use ToyOperatingSys::memory::active_level_4_table;
+    use x86_64::VirtAddr;
 
+    println!("Hello World{}", "!");
     ToyOperatingSys::init();
+
+    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    let l4_table = unsafe {
+        active_level_4_table(phys_mem_offset)
+    };
+
+    for (i, entry) in l4_table.iter().enumerate() {
+        if !entry.is_unused() {
+            println!("L4 Entry {}: {:?}", i, entry);
+        }
+    }
+
+    // Read Level 4 Page Table
+    // use x86_64::registers::control::Cr3;
+    // let (level_4_page_table, _) = Cr3::read();
+    // println!("Level 4 page table at: {:?}", level_4_page_table.start_address());
 
     #[cfg(test)]
     test_main();
